@@ -2,12 +2,6 @@ import numpy
 import os
 
 
-_DATA_CHUNK_HEADER_SIZE = 8
-_FMT_CHUNK_DATA_SIZE = 16
-_FMT_CHUNK_HEADER_SIZE = 8
-_RIFF_FORMAT_DESCRIPTOR_SIZE = 4
-
-
 def load_ppg_waves():
   raw_waves = numpy.fromfile('data/ppg.bin', dtype=numpy.uint8)
   waves = []
