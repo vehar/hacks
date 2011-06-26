@@ -1,0 +1,1 @@
+A naive program for removing noise from audio signals -- simple but good enough to outperforms Audacity's denoiser. It uses the classic "estimate a noise floor and kill everything below it", with smoothing filters in the frequential and temporal direction to avoid birdy artifacts.
