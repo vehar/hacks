@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-#define BLEP_POOL_SIZE 2
+#define BLEP_POOL_SIZE 4
 
 typedef struct Blep {
   uint16_t phase;

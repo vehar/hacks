@@ -28,7 +28,11 @@ uint32_t phase_increment(double frequency) {
 
 // Converts a MIDI note number to a frequency
 double midi_to_hertz(double midi_note) {
-  return 440.0 * pow(2.0, (midi_note - 69.0) / 12.0);
+  double hz = 440.0 * pow(2.0, (midi_note - 69.0) / 12.0);
+  if (hz > kSampleRate / 2) {
+    hz = kSampleRate / 2;
+  }
+  return hz;
 }
 
 uint8_t division_groundtruth(uint32_t a, uint32_t b) {
@@ -87,7 +91,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < kSampleRate * 5; ++i) {
     // Update modulations.
     if ((i % 40) == 0) {
-      double note = 60 + 48 * sin(i * 4.0 / kSampleRate);
+      double note = 94 + 12 * sin(i * 4.0 / kSampleRate);
       double pw = 0.5 + 0.3 * sin(i * 17.0 / kSampleRate);
       blep_set_pw(&square, pw);
       blep_set_increment(&saw, phase_increment(midi_to_hertz(note)));

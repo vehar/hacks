@@ -23,7 +23,7 @@ THRESHOLD = 3
 
 def minimum_phase_reconstruction(signal, fft_size=32768):
   Xf = numpy.fft.fft(signal, fft_size)
-  real_cepstrum = numpy.fft.ifft(numpy.log(numpy.abs(Xf))).real
+  real_cepstrum = numpy.fft.ifft(numpy.log(1e-50 + numpy.abs(Xf))).real
   real_cepstrum[1:fft_size / 2] *= 2
   real_cepstrum[fft_size / 2 + 1:] = 0
   min_phi = numpy.fft.ifft(numpy.exp(numpy.fft.fft(real_cepstrum))).real
