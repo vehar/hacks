@@ -35,14 +35,6 @@ double midi_to_hertz(double midi_note) {
   return hz;
 }
 
-uint8_t division_groundtruth(uint32_t a, uint32_t b) {
-  return (256 * a) / b;
-}
-
-uint8_t division_fast(uint32_t a, uint32_t b) {
-  return (256 * a) / b;
-}
-
 void write_wav_header(FILE* fp, int num_samples) {
   // Writes the WAV header for 16-bits mono PCM data.
   char data[4];
@@ -91,7 +83,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < kSampleRate * 5; ++i) {
     // Update modulations.
     if ((i % 40) == 0) {
-      double note = 94 + 12 * sin(i * 4.0 / kSampleRate);
+      double note = 44 + 12 * sin(i * 4.0 / kSampleRate);
       double pw = 0.5 + 0.3 * sin(i * 17.0 / kSampleRate);
       blep_set_pw(&square, pw);
       blep_set_increment(&saw, phase_increment(midi_to_hertz(note)));
@@ -107,14 +99,4 @@ int main(int argc, char** argv) {
 
   fclose(square_fp);
   fclose(saw_fp);
-  
-  /*while (1) {
-    uint32_t b = rand() % 0xffffff;
-    uint32_t a = rand() % b;
-    uint8_t x = division_groundtruth(a, b);
-    uint8_t y = division_fast(a, b);
-    if (x != y) {
-      printf("%d %d %d %d\n", a, b, x, y);
-    }
-  }*/
 }

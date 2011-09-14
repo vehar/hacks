@@ -15,8 +15,10 @@
 
 #include "blep.h"
 #include "blep_table.h"
+#include "reciprocal_table.h"
 
 #include <string.h>
+#include <stdio.h>
 
 const uint32_t kWrap24bits = 0x00ffffff;
 
@@ -35,12 +37,46 @@ void blep_set_pw(BlepOscillator* me, double pulse_width) {
   me->pw = kWrap24bits * pulse_width;
 }
 
+uint16_t blep_phase_fraction(uint32_t a, uint32_t b) {
+  return (BLEP_OVERSAMPLING * a) / b;
+}
+
+uint16_t blep_phase_fraction_fast(uint32_t a, uint32_t b) {
+  // Shift by 8 if we have a very high value.
+  if ((b >> 16) & 0xff) {
+    b >>= 8;
+    a >>= 8;
+  }
+  // Shift until the divisor is below 256.
+  while (b >> 8) {
+    b >>= 1;
+    a >>= 1;
+  }
+  // Very rare case where a > b, used when PWM is modulated.
+  // Add 1 to the result.
+  uint16_t result = 0;
+  while (a > b) {
+    result += 256;
+    a -= b;
+  }
+  result += ((reciprocal_table[b] * a) >> 8);
+  return result;
+}
+
 void blep_add_blep(
     BlepOscillator* me,
     uint32_t phase_remainder,
     int16_t scale) {
   me->lru_blep = (me->lru_blep + 1) % BLEP_POOL_SIZE;
-  uint16_t blep_phase = (BLEP_OVERSAMPLING * phase_remainder) / me->phase_increment;
+#ifdef BLEP_NO_DIVISION
+  uint16_t blep_phase = blep_phase_fraction_fast(
+    phase_remainder,
+    me->phase_increment);
+#else
+  uint16_t blep_phase = blep_phase_fraction(
+    phase_remainder,
+    me->phase_increment);
+#endif  // BLEP_NO_DIVISION
   me->blep_pool[me->lru_blep].phase = blep_phase;
   me->blep_pool[me->lru_blep].scale = scale;
   me->blep_pool[me->lru_blep].active = 1;
