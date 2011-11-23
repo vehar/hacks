@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
   for (int i = 0; i < kSampleRate * 5; ++i) {
     // Update modulations.
     if ((i % 40) == 0) {
-      double note = 44 + 12 * sin(i * 4.0 / kSampleRate);
-      double pw = 0.5 + 0.3 * sin(i * 17.0 / kSampleRate);
+      double note = 84 + 3 * sin(i * 4.0 / kSampleRate);
+      double pw = 0.25 + 0.25 * sin(i * 17.0 / kSampleRate);
       blep_set_pw(&square, pw);
       blep_set_increment(&saw, phase_increment(midi_to_hertz(note)));
       blep_set_increment(&square, phase_increment(midi_to_hertz(note)));

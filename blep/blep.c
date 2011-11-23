@@ -66,7 +66,7 @@ uint16_t blep_phase_fraction_fast(uint32_t a, uint32_t b) {
 void blep_add_blep(
     BlepOscillator* me,
     uint32_t phase_remainder,
-    int16_t scale) {
+    int8_t scale) {
   me->lru_blep = (me->lru_blep + 1) % BLEP_POOL_SIZE;
 #ifdef BLEP_NO_DIVISION
   uint16_t blep_phase = blep_phase_fraction_fast(
@@ -79,19 +79,18 @@ void blep_add_blep(
 #endif  // BLEP_NO_DIVISION
   me->blep_pool[me->lru_blep].phase = blep_phase;
   me->blep_pool[me->lru_blep].scale = scale;
-  me->blep_pool[me->lru_blep].active = 1;
 }
 
 int16_t blep_accumulate_bleps(BlepOscillator* me) {
   int16_t result = 0;
   // Unroll-me!
   for (uint8_t i = 0; i < BLEP_POOL_SIZE; ++i) {
-    if (me->blep_pool[i].active) {
+    if (me->blep_pool[i].scale) {
       int32_t value = blep[me->blep_pool[i].phase];
-      result += (value * me->blep_pool[i].scale) >> 14;
+      result += (value * me->blep_pool[i].scale) >> 7;
       me->blep_pool[i].phase += BLEP_OVERSAMPLING;
       if (me->blep_pool[i].phase >= BLEP_TABLE_SIZE) {
-        me->blep_pool[i].active = 0;
+        me->blep_pool[i].scale = 0;
       }
     }
   }
@@ -101,7 +100,7 @@ int16_t blep_accumulate_bleps(BlepOscillator* me) {
 int16_t blep_render_saw(BlepOscillator* me) {
   me->phase = (me->phase + me->phase_increment) & kWrap24bits;
   if (me->phase < me->phase_increment) {
-    blep_add_blep(me, me->phase, 32767);
+    blep_add_blep(me, me->phase, 32767 >> 8);
   }
   int16_t output = (me->phase >> 9) - 16384;
   output += blep_accumulate_bleps(me);
@@ -112,12 +111,14 @@ int16_t blep_render_square(BlepOscillator* me) {
   me->phase = (me->phase + me->phase_increment) & kWrap24bits;
   if (me->phase >= me->pw) {
     if (me->up) {
-      blep_add_blep(me, me->phase - me->pw, 32767);
+      blep_add_blep(me, me->phase - me->pw, 32767 >> 8);
     }
     me->up = 0;
   }
   if (me->phase < me->phase_increment) {
-    blep_add_blep(me, me->phase, -32767);
+    if (!me->up) {
+      blep_add_blep(me, me->phase, -32767 >> 8);
+    }
     me->up = 1;
   }
   int16_t output = me->up ? 16383 : -16384;

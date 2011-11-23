@@ -23,8 +23,7 @@
 
 typedef struct Blep {
   uint16_t phase;
-  int16_t scale;
-  uint8_t active;
+  int8_t scale;
 } Blep;
 
 typedef struct BlepOscillator {
@@ -42,7 +41,7 @@ void blep_set_pw(BlepOscillator* me, double pulse_width);
 void blep_add_blep(
     BlepOscillator* me,
     uint32_t phase_remainder,
-  int16_t scale);
+    int8_t scale);
 int16_t blep_accumulate_bleps(BlepOscillator* me);
 int16_t blep_render_saw(BlepOscillator* me);
 int16_t blep_render_square(BlepOscillator* me);

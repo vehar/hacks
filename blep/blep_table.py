@@ -53,7 +53,7 @@ def main():
   blep = numpy.cumsum(blep)
 
   blep = 1.0 - (blep / blep[-1])
-  blep_s2_14 = (blep * 16384).round().astype(numpy.int16)
+  blep_s2_14 = (blep * 32767).round().astype(numpy.int16)
   print_table('blep', blep_s2_14)
 
 
