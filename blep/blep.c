@@ -27,6 +27,7 @@ void blep_init(BlepOscillator* me) {
   me->phase_increment = 0;
   memset(me->blep_pool, 0, sizeof(me->blep_pool));
   me->lru_blep = 0;
+  me->pw = kWrap24bits >> 1;
 }
 
 void blep_set_increment(BlepOscillator* me, uint32_t increment) {
@@ -100,28 +101,36 @@ int16_t blep_accumulate_bleps(BlepOscillator* me) {
 int16_t blep_render_saw(BlepOscillator* me) {
   me->phase = (me->phase + me->phase_increment) & kWrap24bits;
   if (me->phase < me->phase_increment) {
-    blep_add_blep(me, me->phase, 32767 >> 8);
+    blep_add_blep(me, me->phase, me->previous_sample);
   }
   int16_t output = (me->phase >> 9) - 16384;
+  me->previous_sample = me->phase >> 17;
   output += blep_accumulate_bleps(me);
   return output;
 }
 
 int16_t blep_render_square(BlepOscillator* me) {
   me->phase = (me->phase + me->phase_increment) & kWrap24bits;
-  if (me->phase >= me->pw) {
-    if (me->up) {
+  if (me->up) {
+    if (me->phase >= me->pw) {
       blep_add_blep(me, me->phase - me->pw, 32767 >> 8);
+      me->up = 0;
     }
-    me->up = 0;
-  }
-  if (me->phase < me->phase_increment) {
-    if (!me->up) {
+  } else {
+    if (me->phase < me->phase_increment) {
       blep_add_blep(me, me->phase, -32767 >> 8);
+      me->up = 1;
     }
-    me->up = 1;
   }
   int16_t output = me->up ? 16383 : -16384;
   output += blep_accumulate_bleps(me);
   return output;
+}
+
+uint8_t blep_has_completed_cycle(BlepOscillator* me) {
+  return me->phase < me->phase_increment;
+}
+
+void blep_reset_phase(BlepOscillator* me) {
+  me->phase = -me->phase_increment;
 }

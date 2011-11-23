@@ -32,6 +32,7 @@ typedef struct BlepOscillator {
   uint32_t pw;
   uint8_t lru_blep;
   uint8_t up;
+  int8_t previous_sample;
   Blep blep_pool[BLEP_POOL_SIZE];
 } BlepOscillator;
 
@@ -45,5 +46,8 @@ void blep_add_blep(
 int16_t blep_accumulate_bleps(BlepOscillator* me);
 int16_t blep_render_saw(BlepOscillator* me);
 int16_t blep_render_square(BlepOscillator* me);
+
+uint8_t blep_has_completed_cycle(BlepOscillator* me);
+void blep_reset_phase(BlepOscillator* me);
 
 #endif  // BLEP_H_

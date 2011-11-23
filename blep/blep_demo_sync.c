@@ -68,35 +68,33 @@ void write_wav_header(FILE* fp, int num_samples) {
 
 int main(int argc, char** argv) {
   // Create .wav header.
-  FILE* square_fp = fopen("square.wav", "wb");
-  FILE* saw_fp = fopen("saw.wav", "wb");
-  write_wav_header(square_fp, kSampleRate * 5);
-  write_wav_header(saw_fp, kSampleRate * 5);
+  FILE* sync_fp = fopen("sync.wav", "wb");
+  write_wav_header(sync_fp, kSampleRate * 5);
   
   // Initialize BLEP structure.
-  BlepOscillator saw;
-  BlepOscillator square;
-  blep_init(&saw);
-  blep_init(&square);
+  BlepOscillator master;
+  BlepOscillator slave;
+  blep_init(&master);
+  blep_init(&slave);
 
   // Render a sweep.
   for (int i = 0; i < kSampleRate * 5; ++i) {
     // Update modulations.
     if ((i % 40) == 0) {
-      double note = 108 + 3 * sin(i * 4.0 / kSampleRate);
-      double pw = 0.25 + 0.25 * sin(i * 17.0 / kSampleRate);
-      blep_set_pw(&square, pw);
-      blep_set_increment(&saw, phase_increment(midi_to_hertz(note)));
-      blep_set_increment(&square, phase_increment(midi_to_hertz(note)));
+      double note = 64 + 12 * sin(i * 4.0 / kSampleRate);
+      blep_set_increment(&master, phase_increment(midi_to_hertz(60)));
+      blep_set_increment(&slave, phase_increment(midi_to_hertz(note)));
     }
     
     // Compute samples and write them to a WAV file.
-    int16_t saw_sample = blep_render_saw(&saw);
-    int16_t square_sample = blep_render_square(&square);
-    fwrite(&saw_sample, sizeof(int16_t), 1, saw_fp);
-    fwrite(&square_sample, sizeof(int16_t), 1, square_fp);
+    int16_t master_sample = blep_render_square(&master);
+    if (blep_has_completed_cycle(&master)) {
+      blep_reset_phase(&slave);
+    }
+    int16_t slave_sample = blep_render_square(&slave);
+    int16_t sample = (master_sample + slave_sample) / 2;
+    fwrite(&sample, sizeof(int16_t), 1, sync_fp);
   }
 
-  fclose(square_fp);
-  fclose(saw_fp);
+  fclose(sync_fp);
 }
