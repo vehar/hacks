@@ -83,15 +83,16 @@ int main(int argc, char** argv) {
   for (int i = 0; i < kSampleRate * 5; ++i) {
     // Update modulations.
     if ((i % 40) == 0) {
-      double note = 108 + 3 * sin(i * 4.0 / kSampleRate);
+      double note = 40 + 3 * sin(i * 4.0 / kSampleRate);
       double pw = 0.25 + 0.25 * sin(i * 17.0 / kSampleRate);
       blep_set_pw(&square, pw);
+      blep_set_pw(&saw, pw);
       blep_set_increment(&saw, phase_increment(midi_to_hertz(note)));
       blep_set_increment(&square, phase_increment(midi_to_hertz(note)));
     }
     
     // Compute samples and write them to a WAV file.
-    int16_t saw_sample = blep_render_saw(&saw);
+    int16_t saw_sample = blep_render_dual_saw(&saw);
     int16_t square_sample = blep_render_square(&square);
     fwrite(&saw_sample, sizeof(int16_t), 1, saw_fp);
     fwrite(&square_sample, sizeof(int16_t), 1, square_fp);

@@ -33,6 +33,11 @@ typedef struct BlepOscillator {
   uint8_t lru_blep;
   uint8_t up;
   int8_t previous_sample;
+
+  // They are used for the dual saw oscillator which gives a PWM effect
+  // by mixing two dephased sawtooth waves.
+  uint32_t secondary_phase;
+  int8_t secondary_previous_sample;
   Blep blep_pool[BLEP_POOL_SIZE];
 } BlepOscillator;
 
@@ -45,6 +50,7 @@ void blep_add_blep(
     int8_t scale);
 int16_t blep_accumulate_bleps(BlepOscillator* me);
 int16_t blep_render_saw(BlepOscillator* me);
+int16_t blep_render_dual_saw(BlepOscillator* me);
 int16_t blep_render_square(BlepOscillator* me);
 
 uint8_t blep_has_completed_cycle(BlepOscillator* me);

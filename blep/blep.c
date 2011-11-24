@@ -109,6 +109,27 @@ int16_t blep_render_saw(BlepOscillator* me) {
   return output;
 }
 
+int16_t blep_render_dual_saw(BlepOscillator* me) {
+  me->phase = (me->phase + me->phase_increment) & kWrap24bits;
+  if (me->phase < me->phase_increment) {
+    blep_add_blep(me, me->phase, me->previous_sample);
+    me->secondary_phase = me->phase + me->pw;
+  }
+  
+  me->secondary_phase = (me->secondary_phase + me->phase_increment) & kWrap24bits;
+  if (me->secondary_phase < me->phase_increment) {
+    blep_add_blep(me, me->secondary_phase, me->secondary_previous_sample);
+  }
+  
+  int16_t output = me->phase >> 10;
+  output += me->secondary_phase >> 10;
+  output -= 16384;
+  me->previous_sample = me->phase >> 18;
+  me->secondary_previous_sample = (me->phase + me->pw) >> 18;
+  output += blep_accumulate_bleps(me);
+  return output;
+}
+
 int16_t blep_render_square(BlepOscillator* me) {
   me->phase = (me->phase + me->phase_increment) & kWrap24bits;
   if (me->up) {
