@@ -1,0 +1,20 @@
+This code is a very light implementation of blep for the generation of bandlimited waveforms. It is suitable for architectures without FPU, hardware division, short multiplications, and limited computational resources, such as entry-level MCUs.
+
+While it can be used "as is", it will yield better performances if some sections are rewritten in assembly language for the target architectures ; or at least if some careful choices are made regarding data types. In particular, the phase accumulator is 24 bits; and thus on an 8-bit MCU it is not recommended to use uint32_t but rather to roll your own 24-bit type.
+
+The following tricks were used:
+* The oversampling used for the blep table is unusually large (256, leading to about 12k of lookup tables). This makes interpolation unnecessary when reading from the blep table.
+
+* Most blep implementations compute the (badly aliased) oscillator signal into the buffer, and then iterate on the list of active bleps to add them to the buffer being rendered. Here, we scan the list of active bleps at each sample. This makes it unnecessary to keep track of the start point of each blep.
+
+* The structure storing the list of active bleps is a fixed size array; and the least recently triggered blep is just thrown away if a new blep needs to be started. The assumption here is that in most cases there are no more than 2 bleps active at a time -- this works well and stops being true above MIDI note 90. Two consequences:
+ - The loop accumulating the bleps can be unrolled.
+ - A different worst case / mean case performance trade-off can be achieved by disabling the check on the flag indicating the activity of a blep.
+
+* The mighty division used to compute the offset in the blep table is done with a reciprocal lookup table and a multiplication + shift. Divisor and dividend are shifted until the 256 values lookup table can be used.
+
+* The blep scale is stored as an 8-bit signed integer. Not a problem for square waves which have only two levels, acceptable for sawtooth. As a consequence, the cost of mixing in a blep is dominated by the cost of a S16 x S8 multiplication.
+
+
+Further optimization:
+- Rearrange the blep table such that the increment between successive reads in the table is +1 instead of +256.
