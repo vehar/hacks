@@ -1,6 +1,6 @@
 #!/usr/bin/python2.6
 #
-# Author: Olivier Gillet (olivier@gmail.com)
+# Author: Emilie Gillet (Emilie@gmail.com)
 
 """Functions for short term fourier analysis/synthesis."""
 

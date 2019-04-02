@@ -138,8 +138,9 @@ class TextileToTexConverter(object):
         if not os.path.exists(self._image_path):
           os.mkdir(self._image_path)
         f = file(local_version, 'w')
-        print url
-        f.write(urllib2.urlopen(os.path.join(self._root, url)).read())
+        if not url.startswith('http'):
+          url = os.path.join(self._root, url)
+        f.write(urllib2.urlopen(url).read())
         f.close()
       width = 0.8
       if self._in_table:
@@ -186,8 +187,8 @@ class TextileToTexConverter(object):
 if __name__ == '__main__':
   c = TextileToTexConverter()
   content = c.Convert(
-      file('shruti1_doc.tx').read(),
+      file('shruthi1.tx').read(),
       'http://mutable-instruments.net',
       author='Mutable Instruments',
-      title='Shruti-1 user manual')
-  file('shruti1_doc.tex', 'w').write(content)
+      title='Digital control board assembly instructions')
+  file('shruthi1_doc.tex', 'w').write(content)

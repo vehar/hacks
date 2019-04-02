@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*
 #
-# Copyright (c) 2009 Olivier Gillet (olivier@pichenettes.net)
+# Copyright (c) 2009 Emilie Gillet (emilie.o.gillet@gmail.com)
 #
 # dynamic_range.py
 #

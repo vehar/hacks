@@ -1,6 +1,6 @@
 #!/usr/bin/python2.6
 #
-# Author: Olivier Gillet (ol.gillet@gmail.com)
+# Author: Emilie Gillet (emilie.o.gillet@gmail.com)
 
 """Shows a task progress bar on a text terminal."""
 
